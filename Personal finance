@@ -1,0 +1,14 @@
+<div class="card">
+    <h3>Transaction History</h3>
+    <table style="width:100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background-color: #f2f2f2; text-align: left;">
+                <th style="padding: 10px; border-bottom: 2px solid #ddd;">Description</th>
+                <th style="padding: 10px; border-bottom: 2px solid #ddd;">Category</th>
+                <th style="padding: 10px; border-bottom: 2px solid #ddd;">Amount</th>
+            </tr>
+        </thead>
+        <tbody id="transaction-table-body">
+            </tbody>
+    </table>
+</div>
