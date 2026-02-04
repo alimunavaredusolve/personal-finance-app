@@ -3,78 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance Tracker</title>
+    <title>Finance Manager</title>
     <style>
-        body { font-family: sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h1, h3 { color: #333; text-align: center; }
-        .balance-display { background: #27ae60; color: white; padding: 20px; border-radius: 8px; text-align: center; font-size: 24px; margin-bottom: 20px; }
-        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button { background: #2980b9; color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover { background: #2471a3; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        /* This part makes it look like a real app */
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .app-card { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        h1 { color: #2c3e50; text-align: center; }
+        .input-group { margin-bottom: 15px; }
+        input, select, button { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { background-color: #3498db; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 15px; }
+        button:hover { background-color: #2980b9; }
+        .balance-box { background: #2ecc71; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 25px; }
+        .balance-amount { font-size: 32px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 25px; }
+        th { text-align: left; color: #7f8c8d; border-bottom: 2px solid #eee; padding: 10px; font-size: 14px; }
+        td { padding: 12px; border-bottom: 1px solid #f1f1f1; font-size: 15px; }
+        .type-income { color: #27ae60; font-weight: bold; }
+        .type-expense { color: #e74c3c; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h1>My Finance App</h1>
-        
-        <div class="balance-display">
-            Balance: <span id="total-balance">$0.00</span>
-        </div>
+<div class="app-card">
+    <h1>Finance Dashboard</h1>
+    
+    <div class="balance-box">
+        <div>Current Balance</div>
+        <div class="balance-amount" id="total-balance">$0.00</div>
+    </div>
 
-        <input type="text" id="desc" placeholder="What is this for?">
-        <input type="number" id="amt" placeholder="Amount ($)">
+    <div class="input-group">
+        <label>Description</label>
+        <input type="text" id="desc" placeholder="e.g. Monthly Salary, Grocery">
+    </div>
+
+    <div class="input-group">
+        <label>Amount ($)</label>
+        <input type="number" id="amount" placeholder="0.00">
+    </div>
+
+    <div class="input-group">
+        <label>Category</label>
         <select id="type">
             <option value="income">Income (+)</option>
             <option value="expense">Expense (-)</option>
             <option value="loan">Loan/Credit (-)</option>
+            <option value="investment">Investment (+)</option>
         </select>
-        <button onclick="addEntry()">Save Transaction</button>
-
-        <h3>History</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Description</th>
-                    <th>Amount</th>
-                </tr>
-            </thead>
-            <tbody id="transaction-table-body"></tbody>
-        </table>
     </div>
 
-    <script>
-        let currentBalance = 0;
+    <button onclick="addTransaction()">Add Transaction</button>
 
-        function addEntry() {
-            const desc = document.getElementById('desc').value;
-            const amt = parseFloat(document.getElementById('amt').value);
-            const type = document.getElementById('type').value;
+    <h3>Transaction History</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody id="transaction-table-body">
+            </tbody>
+    </table>
+</div>
 
-            if (!desc || isNaN(amt)) return alert("Please fill in the details!");
+<script>
+    let balance = 0;
 
-            // Update Balance
-            if (type === 'income') {
-                currentBalance += amt;
-            } else {
-                currentBalance -= amt;
-            }
+    function addTransaction() {
+        const desc = document.getElementById('desc').value;
+        const amount = parseFloat(document.getElementById('amount').value);
+        const type = document.getElementById('type').value;
 
-            // Update UI
-            document.getElementById('total-balance').innerText = "$" + currentBalance.toFixed(2);
-            
-            const table = document.getElementById('transaction-table-body');
-            const row = table.insertRow(0);
-            row.innerHTML = `<td>${desc}</td><td>${type === 'income' ? '+' : '-'}$${amt.toFixed(2)}</td>`;
-
-            // Clear inputs
-            document.getElementById('desc').value = '';
-            document.getElementById('amt').value = '';
+        if (!desc || isNaN(amount)) {
+            alert("Please fill in both fields!");
+            return;
         }
-    </script>
+
+        // Logic to update balance
+        if (type === 'income' || type === 'investment') {
+            balance += amount;
+        } else {
+            balance -= amount;
+        }
+
+        // Update Balance on Screen
+        document.getElementById('total-balance').innerText = "$" + balance.toFixed(2);
+
+        // Add Row to Table
+        const table = document.getElementById('transaction-table-body');
+        const row = table.insertRow(0);
+        
+        row.innerHTML = `
+            <td>${desc}</td>
+            <td>${type.charAt(0).toUpperCase() + type.slice(1)}</td>
+            <td class="type-${type}">${type === 'expense' || type === 'loan' ? '-' : '+'}$${amount.toFixed(2)}</td>
+        `;
+
+        // Clear Inputs
+        document.getElementById('desc').value = '';
+        document.getElementById('amount').value = '';
+    }
+</script>
 
 </body>
 </html>
