@@ -1,14 +1,80 @@
-<div class="card">
-    <h3>Transaction History</h3>
-    <table style="width:100%; border-collapse: collapse;">
-        <thead>
-            <tr style="background-color: #f2f2f2; text-align: left;">
-                <th style="padding: 10px; border-bottom: 2px solid #ddd;">Description</th>
-                <th style="padding: 10px; border-bottom: 2px solid #ddd;">Category</th>
-                <th style="padding: 10px; border-bottom: 2px solid #ddd;">Amount</th>
-            </tr>
-        </thead>
-        <tbody id="transaction-table-body">
-            </tbody>
-    </table>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Tracker</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h1, h3 { color: #333; text-align: center; }
+        .balance-display { background: #27ae60; color: white; padding: 20px; border-radius: 8px; text-align: center; font-size: 24px; margin-bottom: 20px; }
+        input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { background: #2980b9; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #2471a3; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>My Finance App</h1>
+        
+        <div class="balance-display">
+            Balance: <span id="total-balance">$0.00</span>
+        </div>
+
+        <input type="text" id="desc" placeholder="What is this for?">
+        <input type="number" id="amt" placeholder="Amount ($)">
+        <select id="type">
+            <option value="income">Income (+)</option>
+            <option value="expense">Expense (-)</option>
+            <option value="loan">Loan/Credit (-)</option>
+        </select>
+        <button onclick="addEntry()">Save Transaction</button>
+
+        <h3>History</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody id="transaction-table-body"></tbody>
+        </table>
+    </div>
+
+    <script>
+        let currentBalance = 0;
+
+        function addEntry() {
+            const desc = document.getElementById('desc').value;
+            const amt = parseFloat(document.getElementById('amt').value);
+            const type = document.getElementById('type').value;
+
+            if (!desc || isNaN(amt)) return alert("Please fill in the details!");
+
+            // Update Balance
+            if (type === 'income') {
+                currentBalance += amt;
+            } else {
+                currentBalance -= amt;
+            }
+
+            // Update UI
+            document.getElementById('total-balance').innerText = "$" + currentBalance.toFixed(2);
+            
+            const table = document.getElementById('transaction-table-body');
+            const row = table.insertRow(0);
+            row.innerHTML = `<td>${desc}</td><td>${type === 'income' ? '+' : '-'}$${amt.toFixed(2)}</td>`;
+
+            // Clear inputs
+            document.getElementById('desc').value = '';
+            document.getElementById('amt').value = '';
+        }
+    </script>
+
+</body>
+</html>
