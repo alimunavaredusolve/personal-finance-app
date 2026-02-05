@@ -3,63 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Finance by munavar</title>
+    <title>Finance by Munavar</title>
     <style>
+        :root {
+            --primary-bg: #4f46e5;
+            --income-bg: #10b981;
+            --expense-bg: #ef4444;
+        }
+
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; margin: 0; padding: 20px; }
         .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .header { text-align: center; margin-bottom: 30px; }
+        h1 { text-align: center; color: #1e293b; margin-bottom: 20px; }
+        
+        .stat-card { padding: 15px; border-radius: 12px; text-align: center; color: white; margin-bottom: 10px; }
+        .bg-main { background: var(--primary-bg); }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .stat-card { padding: 15px; border-radius: 12px; text-align: center; color: white; }
-        .bg-primary { background: #4f46e5; }
-        .bg-success { background: #10b981; }
-        .bg-danger { background: #ef4444; }
-        .bg-warning { background: #f59e0b; }
         
-        input, select, button { width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
-        button { background: #4f46e5; color: white; border: none; font-weight: 600; cursor: pointer; margin-top: 20px; }
-        .btn-clear { background: #f1f5f9; color: #64748b; margin-top: 10px; }
+        input, select, button { width: 100%; padding: 12px; margin-top: 10px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
+        button { background: var(--primary-bg); color: white; border: none; font-weight: bold; cursor: pointer; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
-        th { text-align: left; padding: 12px; color: #64748b; border-bottom: 2px solid #f1f5f9; font-size: 13px; }
+        /* Search Bar Style */
+        .search-box { background: #f1f5f9; border: 2px solid var(--primary-bg); margin-top: 30px; }
+        
+        .btn-download { background: #0f172a; margin-top: 10px; }
+        .btn-reset { background: #f1f5f9; color: #64748b; margin-top: 5px; }
+        .btn-delete { background: #fee2e2; color: #ef4444; width: auto; padding: 5px 10px; font-size: 12px; margin: 0; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; padding: 12px; color: #64748b; font-size: 13px; border-bottom: 2px solid #f1f5f9; }
         td { padding: 12px; border-bottom: 1px solid #f8fafc; font-size: 14px; }
-        .amt-pos { color: #10b981; font-weight: bold; }
-        .amt-neg { color: #ef4444; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <h1>Finance by munavar</h1>
-        <div class="stat-card bg-primary">
-            <small>Net Worth</small>
-            <div id="net-worth" style="font-size: 28px; font-weight: 800;">$0.00</div>
-        </div>
+    <h1>Finance by Munavar</h1>
+
+    <div class="stat-card bg-main">
+        <small>NET WORTH</small>
+        <div id="net-worth" style="font-size: 32px; font-weight: 800;">$0.00</div>
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card bg-success"><small>Income</small><div id="total-income">$0</div></div>
-        <div class="stat-card bg-danger"><small>Expenses</small><div id="total-expense">$0</div></div>
+        <div class="stat-card" style="background: var(--income-bg);"><small>Income</small><div id="total-inc">$0</div></div>
+        <div class="stat-card" style="background: var(--expense-bg);"><small>Expenses</small><div id="total-exp">$0</div></div>
     </div>
 
-    <input type="text" id="desc" placeholder="Description (e.g., Home Loan, Apple Stock)">
+    <input type="date" id="date">
+    <input type="text" id="desc" placeholder="Description (e.g. Salary, Rent)">
     <input type="number" id="amt" placeholder="Amount ($)">
     <select id="type">
-        <option value="income">Income (+)</option>
-        <option value="expense">Expense (-)</option>
-        <option value="loan">Loan/Credit (Liability)</option>
-        <option value="investment">Investment (Asset)</option>
+        <option value="income">💰 Income</option>
+        <option value="expense">🛒 Expense</option>
+        <option value="loan">🏦 Loan/Credit</option>
+        <option value="investment">📈 Investment</option>
     </select>
     
     <button onclick="addEntry()">Add Transaction</button>
-    <button class="btn-clear" onclick="clearData()">Reset All Data</button>
+    <button class="btn-download" onclick="exportCSV()">📥 Export to Excel (CSV)</button>
+    <button class="btn-reset" onclick="clearAll()">Reset Data</button>
+
+    <input type="text" id="search" class="search-box" placeholder="🔍 Search transactions..." onkeyup="render()">
 
     <table>
         <thead>
             <tr>
+                <th>Date</th>
                 <th>Item</th>
-                <th>Category</th>
                 <th>Amount</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody id="list"></tbody>
@@ -67,16 +79,18 @@
 </div>
 
 <script>
-    // 1. Load data from memory immediately when the page opens
-    let records = JSON.parse(localStorage.getItem('myFinances')) || [];
+    let records = JSON.parse(localStorage.getItem('finData')) || [];
+    document.getElementById('date').valueAsDate = new Date();
 
-    function updateUI() {
+    function render() {
         const list = document.getElementById('list');
+        const searchTerm = document.getElementById('search').value.toLowerCase();
         list.innerHTML = '';
+        
         let net = 0, inc = 0, exp = 0;
 
         records.forEach((item, index) => {
-            // Logic for different types
+            // Update Totals (Logic doesn't change even if searching)
             if(item.type === 'income' || item.type === 'investment') {
                 net += item.amt;
                 if(item.type === 'income') inc += item.amt;
@@ -85,47 +99,57 @@
                 exp += item.amt;
             }
 
-            const row = list.insertRow();
-            row.innerHTML = `
-                <td>${item.desc}</td>
-                <td><small>${item.type.toUpperCase()}</small></td>
-                <td class="${item.type === 'income' || item.type === 'investment' ? 'amt-pos' : 'amt-neg'}">
-                    ${item.type === 'income' || item.type === 'investment' ? '+' : '-'}$${item.amt.toLocaleString()}
-                </td>
-            `;
+            // Search Filtering
+            if (item.desc.toLowerCase().includes(searchTerm)) {
+                const row = list.insertRow();
+                row.innerHTML = `
+                    <td><small>${item.date}</small></td>
+                    <td>${item.desc}<br><small style="color:#94a3b8">${item.type}</small></td>
+                    <td style="color:${(item.type==='income'||item.type==='investment') ? '#10b981':'#ef4444'}; font-weight:bold">
+                        ${item.amt.toLocaleString()}
+                    </td>
+                    <td><button class="btn-delete" onclick="deleteItem(${index})">Del</button></td>
+                `;
+            }
         });
 
         document.getElementById('net-worth').innerText = "$" + net.toLocaleString();
-        document.getElementById('total-income').innerText = "$" + inc.toLocaleString();
-        document.getElementById('total-expense').innerText = "$" + exp.toLocaleString();
-        
-        // Save to browser memory
-        localStorage.setItem('myFinances', JSON.stringify(records));
+        document.getElementById('total-inc').innerText = "$" + inc.toLocaleString();
+        document.getElementById('total-exp').innerText = "$" + exp.toLocaleString();
+        localStorage.setItem('finData', JSON.stringify(records));
     }
 
     function addEntry() {
+        const date = document.getElementById('date').value;
         const desc = document.getElementById('desc').value;
         const amt = parseFloat(document.getElementById('amt').value);
         const type = document.getElementById('type').value;
-
-        if(!desc || isNaN(amt)) return alert("Please enter all details");
-
-        records.unshift({ desc, amt, type });
-        updateUI();
-        
+        if(!desc || isNaN(amt)) return alert("Fill all fields");
+        records.unshift({ date, desc, amt, type });
+        render();
         document.getElementById('desc').value = '';
         document.getElementById('amt').value = '';
     }
 
-    function clearData() {
-        if(confirm("Are you sure you want to delete everything?")) {
-            records = [];
-            updateUI();
-        }
+    function deleteItem(index) {
+        records.splice(index, 1);
+        render();
     }
 
-    // Initial run
-    updateUI();
+    function exportCSV() {
+        let csv = "Date,Description,Type,Amount\n";
+        records.forEach(i => csv += `${i.date},${i.desc},${i.type},${i.amt}\n`);
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Finance_Report.csv';
+        a.click();
+    }
+
+    function clearAll() { if(confirm("Clear everything?")) { records = []; render(); } }
+
+    render();
 </script>
 
 </body>
